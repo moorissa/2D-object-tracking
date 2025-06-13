@@ -1,13 +1,36 @@
 # Camera-based 2D Feature Tracking
+*Building Towards Collision Detection*
 
 ## 1. Overview
-This project implements an Unscented Kalman Filter to estimate the state of multiple cars on a highway using noisy *lidar* and *radar* measurements. We'll then evaluate the quality of our filter using RMSE values.
+The main objective of this project is to develop a complete collision detection system. This project builds the core feature tracking capabilities we'll need for collision detection. We'll explore different detector/descriptor combinations to find the optimal performance balance.
 
-<img src="assets/ukf_highway_tracked.gif" width="700" height="400" />
+#### Phase 1: Data Foundation
+We'll first set up the groundwork for efficient image processing:
+- Load and manage image sequences
+- Design robust data structures
+- Implement ring buffer optimization for memory efficiency
 
-`main.cpp` is using `highway.h` to create a straight 3 lane highway environment with 3 traffic cars and the main ego car at the center. The viewer scene is centered around the ego car and the coordinate system is relative to the ego car as well. The ego car is green while the other traffic cars are blue. The traffic cars will be accelerating and altering their steering to change lanes. Each of the traffic car's has its own UKF object generated for it, and will update each indidual one during every time step. 
+#### Phase 2: Keypoint Detection Showdown
+Compare multiple detection algorithms in action:
+- HARRIS - Classic corner detection
+- FAST - Speed-optimized features
+- BRISK - Binary robust features
+- SIFT - Scale-invariant detection
 
-The red spheres above cars represent the (x,y) lidar detection and the purple lines show the radar measurements with the velocity magnitude along the detected angle. The Z axis is not taken into account for tracking, so we're only tracking along the X/Y axis in this project.
+We'll then evaluate each on keypoint quantity and processing speed
+
+#### Phase 3: Feature Matching Arsenal
+We then use two powerful matching approaches:
+- Brute Force - Exhaustive but thorough matching
+- FLANN - Fast approximate matching for real-time performance
+
+#### Phase 4: Performance Benchmarking
+With the complete framework ready, we perform the following evals:
+- Test algorithm combinations systematically
+- Measure and compare performance metrics
+- Identify the winning detector/descriptor pairs
+
+This is the first phase of our next project that will integrate lidar to add depth perception and leverage deep Learning / neural networks for object detection. Together this will complete the final project of creating a collision detection system with robust real-world performance.
 
 
 ## 2. Table of Contents
@@ -20,7 +43,7 @@ The red spheres above cars represent the (x,y) lidar detection and the purple li
 The main program can be built and ran by doing the following from the project top directory.
 
 1. Clone this repo with LFS, which can be done in two ways:
-  1. `git lfs clone https://github.com/moorissa/lidar-obstacle-detector.git` OR
+  1. `git lfs clone <this repo>` OR
   2. Alternatively:
   ```bash
     git clone https://github.com/moorissa/lidar-obstacle-detector.git

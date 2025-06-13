@@ -15,18 +15,11 @@ if(APPLE)
 endif()
 string(REPLACE "-ffloat-store" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
-find_package(PCL 1.10 REQUIRED)
 find_package(OpenCV 4.1 REQUIRED)
 
 include_directories(${OpenCV_INCLUDE_DIRS})
 link_directories(${OpenCV_LIBRARY_DIRS})
 add_definitions(${OpenCV_DEFINITIONS})
-
-include_directories(${CMAKE_SOURCE_DIR}/include)
-include_directories(${PCL_INCLUDE_DIRS})
-link_directories(${PCL_LIBRARY_DIRS})
-add_definitions(${PCL_DEFINITIONS})
-list(REMOVE_ITEM PCL_LIBRARIES "vtkproj4")
 
 # Executable for create matrix exercise
 add_executable (
