@@ -1,4 +1,4 @@
-# Unscented Kalman Filter for Highway
+# Camera-based 2D Feature Tracking
 
 ## 1. Overview
 This project implements an Unscented Kalman Filter to estimate the state of multiple cars on a highway using noisy *lidar* and *radar* measurements. We'll then evaluate the quality of our filter using RMSE values.
@@ -12,7 +12,7 @@ The red spheres above cars represent the (x,y) lidar detection and the purple li
 
 ## 2. Table of Contents
 - [Project Instructions](#build)
-- [UKF Implementation](#implementation)
+- [Implementation](#implementation)
 - [Acknowledgements](#acknowledgements)
 
 
@@ -33,11 +33,11 @@ The main program can be built and ran by doing the following from the project to
    - Compress the PCD files if possible
 2. Make a build directory: `mkdir build && cd build`
 3. Compile: `cmake .. && make -j`
-4. Run it: `./ukf_highway`
+4. Run it: `./2D_feature_tracking`
 
 In short, you can rerun it with: `rm -rf ./* && cmake .. && make && ./ukf_highway`
 
-<img src="assets/ukf_highway.png" width="700" height="400" />
+<img src="images/keypoints.png" width="700" height="400" />
 
 #### Dependencies
 * cmake >= 3.10
@@ -65,131 +65,84 @@ In short, you can rerun it with: `rm -rf ./* && cmake .. && make && ./ukf_highwa
   ```
 * pcl: stable 1.15.0
 
-#### Generating Additional Data
-If you'd like to generate your own radar and lidar modify the code in `highway.h` to alter the cars. Check out `tools.cpp` to
-change how measurements are taken, for instance lidar markers could be the (x,y) center of bounding boxes by scanning the PCD environment and performing clustering.
+
+## 4. Implementation <a name="implementation"></a>
+
+### MP.1 Data Buffer Optimization
+The "ring buffer" is naively implemented by pushing new frames onto the dataBuffer until the size is reached. Then the buffer size is reduced by erasing the oldest frame.
+
+### MP.2 Keypoint Detection
+The HARRIS, FAST, BRISK, ORB, AKAZE, and SIFT keypoint detectors were implemented. The methods were made selectable by changing the string's definition.
+
+### MP.3 Keypoint Removal
+The `.contains` method of the VehicleRect object is used to detect and remove keypoints outside of the rectangle.
+
+### MP.4 Keypoint Descriptors
+The BRIEF, ORB, FREAK, AKAZE and SIFT descriptors were implemented. The methods were made selectable by changing the string's definition.
+
+### MP.5 Descriptor Matching
+The FLANN matcher and kNN matchers are implemented. The methods were made selectable by changing the string's definition
+
+### MP.6 Descriptor Distance Ratio
+Lowe's distance ratio test was implemented by comparing the best and second best matches to decide if a pair of matched keypoints should be stored.
+
+### MP.7 Performance Evaluation 1
+Count the number of keypoints on the preceding vehicle for all 10 images and take note of the distribution of their neighborhood size. Do this for all the detectors you have implemented.
+
+| Detector | image0 | image1 | image2 | image3 | image4 | image5 | image6 | image7 | image8 | image9 | Neighborhood size |
+| :---:    | :---:  | :---:  | :---:  |  :---: | :---:  | :---:  | :---:  | :---:  | :---:  | :---:  | :---: |
+| SHI-TOMASI | 125 | 118 | 123 | 120 | 120 | 113 | 114 | 123 | 111 | 112 | 4
+| HARRIS | 17 | 14 | 18 | 21 | 26 | 43 | 18 | 30 | 26 | 34 | 6
+| FAST | 121 | 115 | 127 | 122 | 111 | 113 | 107 | 103 | 112 | 117 | 7
+| BRISK | 264 | 282 | 282 | 277 | 297 | 279 | 289 | 272 | 266 | 254 | 21
+| ORB | 92 | 102 | 106 | 113 | 109 | 125 | 130 | 129 | 127 | 128 | 57
+| AKAZE | 166 | 157 | 161 | 155 | 163 | 164 | 173 | 175 | 177 | 179 | 7.8
+| SIFT | 138 | 132 | 124 | 137 | 134 | 140 | 137 | 148 | 159 | 137 | 5.6
+
+### MP.7 Performance Evaluation 2
+Count the number of matched keypoints for all 10 images using all possible combinations of detectors and descriptors. In the matching step, the BF approach is used with the descriptor distance ratio set to 0.8.
+
+Some combinations of detector and descriptor doesn't make sense, those results are N/A.
+
+| Detector,Descriptor | BRISK | BRIEF | ORB | FREAK | AKAZE | SIFT |
+| --- | --- | --- |--- |--- |--- |--- |
+| SHITOMASI | 686 |922|866|688|N/A|900|
+| HARRIS | 138|169 |164|134|N/A|167|
+| FAST | 638 |805|831|645|N/A|763|
+| BRISK | **1426** | **1512** |1379|1386|N/A| **1529** |
+| ORB | 678 |486|691|395|N/A|742|
+| AKAZE | 1020 |1169|1096|1002|1199|1176|
+| SIFT | 491 |695|N/A|492|N/A|759|
+
+### MP.7 Performance Evaluation 3
+Log the time it takes for keypoint detection and descriptor extraction. The results must be entered into a spreadsheet and based on this data, the TOP3 detector / descriptor combinations must be recommended as the best choice for our purpose of detecting keypoints on vehicles.
+
+Some combinations of detector and descriptor doesn't make sense, those results are N/A.
+
+| Detector\Descriptor | BRISK | BRIEF | ORB | FREAK | AKAZE | SIFT |
+| --- | --- | --- |--- |--- |--- |--- |
+| SHITOMASI| 17.98 |21.38|18.8|52.4079|N/A| 31.82|
+| HARRIS | 13.28|14.50 |14.24|32.07| N/A| 22.31|
+| FAST| **3.98** | **3.72** | **3.12** |22.91|N/A|14.72|
+| BRISK| 34.84 |33.42|40.72|54.59|N/A|54.73|
+| ORB| 5.82 |6.91|11.12|22.52|N/A|23.83|
+| AKAZE| 51.55|53.93 |57.92|75.42|93.73|67.89|
+| SIFT| 68.54 |88.18|N/A|113.33|N/A|137.67|
+
+The top 3 detector/descriptor combinations are found by evaluating the tables above.
+
+In terms of number of matched keypoints (More is better)
+  1. BRISK/SIFT
+  2. BRISK/BRIEF
+  3. BRISK/BRISK
+
+In terms of execution time (Small is better)
+  1. FAST/ORB
+  2. FAST/BRIEF
+  3. FAST/BRISK
 
 
-## 4. UKF Implementation <a name="implementation"></a>
-
-## 4.1. Parameters
-File(s): `highway.h` - there are a number of parameters we can modify for debugging purpose.
-- `trackCars` list can toggle on/off cars for UKF object to track
-- `projectedTime` and `projectedSteps` controls the visualization of predicted position in the future
-- `visualize_pcd` sets the visualization of Lidar point cloud data
-
-```c++
-// Set which cars to track with UKF
-std::vector<bool> trackCars = {true,true,true};
-// Visualize sensor measurements
-bool visualize_lidar = true;
-bool visualize_radar = true;
-bool visualize_pcd = false;
-// Predict path in the future using UKF
-double projectedTime = 0;
-int projectedSteps = 0;
-```
-
-## 4.2. Code Walkthrough
-Instead of using mathematical approximations (like linearization), the UKF approach:
-1. Samples the uncertainty space with carefully chosen "sigma points"
-2. Runs each sample through the exact nonlinear motion model
-3. Statistically combines the results to get the predicted mean and covariance
-
-This gives much more accurate predictions for nonlinear systems compared to traditional Kalman filters. In the following steps, we will learn that `ProcessMeasurement` function = Update cycle that:
-- Takes in new sensor data (LIDAR or RADAR measurement)
-- Calls `Prediction()` first, then calls the appropriate update function (`UpdateLidar` or `UpdateRadar`)
-- This is the complete measurement processing cycle
-
-In this case, `Prediction` = Predict step only of the predict-update cycle. It uses motion model to estimate where object should be at current time, and no sensor data involved - purely physics/motion-based prediction.
-
-#### The Full Cycle
-Overall, we're implementing `ProcessMeasurement()` function that does:
-1. `Prediction(dt)`      -> "Where should object be now?" (physics)
-2. `UpdateLidar/Radar()` -> "Correct prediction with sensor data"
-
-Process Measurement basically manages the timing and calls both steps in sequence whenever new sensor data arrives -- which aligns with the standard Kalman filter pattern:
-1. *Predict:* Use motion model to forecast state
-2. *Update:* Use sensor measurement to correct the forecast
-
-
-### 1. Initialize UKF attributes
-File(s): `ukf.cpp`
-- dimension of the state vector `n_x_`
-- state vector `x_`
-- covariance matrix `P_`
-- dimension of the augmented state vector `n_aug_`
-- predicted sigma points matrix `Xsig_pred_`
-- sigma points weights vector `weights_`
-- standard deviation of longitudinal acceleration noise `std_a_`
-- standard deviation of yaw acceleration noise `std_yawdd_`
-- sigma points spreading parameter `lambda_`
-
-
-### 2. Implement process measurement
-File(s): `ukf.cpp` -> `UKF::ProcessMeasurement`
-
-For the very first incoming measurement, state vector `x_`, covariance matrix `P_`, and timestamp `time_us_` are initialized according to the raw data `meas_package.raw_measurements_` and `meas_package.timestamp_`.
-
-For the following measurements, timestamp `time_us_` is recorded, a sequence of functions are called to `Prediction()` and `UpdateLidar()`/`UpdateRadar()`.
-
-Main functionality of `UKF::ProcessMeasurement`:
-- Initialization: On first measurement, initializes the state vector with position data from either LIDAR (direct x,y) or RADAR (converted from polar coordinates)
-- Prediction: Uses the motion model to predict where the object should be at the current timestamp
-- Update: Corrects the prediction using the actual sensor measurement
-Key points:
-
-The state vector has 5 elements: `[px, py, v, yaw, yawd]` representing position, velocity, yaw angle, and yaw rate
-- LIDAR gives direct cartesian coordinates, while RADAR provides polar coordinates that need conversion
-- The filter alternates between prediction (based on motion model) and update (based on sensor measurements)
-- Time intervals are calculated and converted from microseconds to seconds for the prediction step
-
-This is a typical sensor fusion implementation where both LIDAR and RADAR measurements are used to track an object's state over time.
-
-
-### 3. Implement prediction
-File(s): `ukf.cpp` -> `UKF::Prediction()`
-
-The main functionality of this UKF Prediction function is to predict where an object will be at the next time step, while properly accounting for uncertainty and nonlinear motion. Meaning, given the current state estimate and elapsed time (`delta_t`), predict the object's future position, velocity, heading, and turn rate.
-
-The prediction process is the same for both Lidar and Radar measurements.
-
-- creates an augmented mean vector `x_aug` and augmented state covariance matrix `P_aug`
-- generate sigma points matrix `Xsig_aug` for previously estimated state vector
-- predict sigma points matrix `Xsig_pred_` for the current state vector 
-- predict the state mean `x_` and covariance `P_` using weights and predicted sigma points
-
-#### Key Capabilities
-- Handles nonlinear motion: Unlike linear Kalman filters, this can handle objects that turn (curved trajectories) as well as straight-line motion.
-- Uncertainty propagation: It doesn't just predict a single "best guess" - it predicts how uncertain we should be about that prediction by tracking how uncertainty grows over time.
-- Process noise modeling: Accounts for the fact that our motion model isn't perfect - real objects experience random accelerations and disturbances we can't predict exactly.
-
-
-### 4. Implement updates on Lidar and Radar data
-File(s): `ukf.cpp` -> `UKF::UpdateLidar()` and `UKF::UpdateRadar()` 
-
-The steps to update Lidar and Radar measurements are similar, except Lidar points are in the **Cartesian** coordinates but Radar points are in the **Polar** coordinates. Therefore, they differ in the measurement dimension `n_z`, dimension of matrices, and the transformation equations.
-
-Generally, they follow the same steps to update the measurement.
-
-- transform the predicted sigma points `Xsig_pred_` into measurement space `Zsig` based on the sensor types
-- calculate the mean state `z_` and covariance matrix `S` with noise considered
-- calculate cross-correlation matrix `Tc` between state space and measurement space
-- calculate the Kalman gain `K`
-- update the state vector `x_` and covariance `P_`
-
-
-### 5. Test run
-
-The screenshot shown below is one of the simulation moments. The ego car is green while the other traffic cars are blue. The red spheres above cars represent the `(x,y)` lidar detection and the purple lines show the radar measurements with the velocity magnitude along the detected angle. The green spheres above cars represent the predicted path that cars would move in the near future.
-
-On the left-hand side, the root mean squared errors (RMSE) for position `(x,y)` and velocity `(Vx, Vy)` are calculated in realtime, which represent the prediction accuracy.
-
-<img src="assets/ukf_highway_result.png" width="700" height="400" />
-
-
-
-## Ackowledgements <a name="acknowledgements"></a>
+## 5. Ackowledgements <a name="acknowledgements"></a>
 * [Udacity Sensor Fusion Program](https://www.udacity.com/course/sensor-fusion-engineer-nanodegree--nd313)
 
 For any questions or feedback, feel free to email [moorissa.tjokro@columbia.edu](mailto:moorissa.tjokro@columbia.edu).
