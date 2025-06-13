@@ -4,6 +4,8 @@
 ## 1. Overview
 The main objective of this project is to develop a complete collision detection system. This project builds the core feature tracking capabilities we'll need for collision detection. We'll explore different detector/descriptor combinations to find the optimal performance balance.
 
+<img src="images/keypoints.png" width="700" height="400" />
+
 #### Phase 1: Data Foundation
 We'll first set up the groundwork for efficient image processing:
 - Load and manage image sequences
@@ -58,9 +60,7 @@ The main program can be built and ran by doing the following from the project to
 3. Compile: `cmake .. && make -j`
 4. Run it: `./2D_feature_tracking`
 
-In short, you can rerun it with: `rm -rf ./* && cmake .. && make && ./ukf_highway`
-
-<img src="images/keypoints.png" width="700" height="400" />
+In short, we can rerun it with: `rm -rf ./* && cmake .. && make && ./ukf_highway`
 
 #### Dependencies
 * cmake >= 3.10
