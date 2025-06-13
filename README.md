@@ -45,11 +45,11 @@ This is the first phase of our next project that will integrate lidar to add dep
 The main program can be built and ran by doing the following from the project top directory.
 
 1. Clone this repo with LFS, which can be done in two ways:
-  1. `git lfs clone <this repo>` OR
+  1. `git lfs clone git@github.com:moorissa/2D-object-tracking.git` OR
   2. Alternatively:
   ```bash
-    git clone https://github.com/moorissa/lidar-obstacle-detector.git
-    cd lidar-obstacle-detector  # ensure no duplicated names in the same directory
+    git clone git@github.com:moorissa/2D-object-tracking.git
+    cd 2D-object-tracking  # ensure no duplicated names in the same directory
     git lfs pull
   ```
   If LFS continues causing (submission) issues:
