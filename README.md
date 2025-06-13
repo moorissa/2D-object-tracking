@@ -73,8 +73,8 @@ In short, we can rerun it with: `rm -rf ./* && cmake .. && make && ./ukf_highway
   * Linux: gcc / g++ is installed by default on most Linux distros
   * Mac: same deal as make - [install Xcode command line tools](https://developer.apple.com/xcode/features/)
   * Windows: recommend using [MinGW](http://www.mingw.org/)
-* PCL >= 1.10
-  * [Documentation](https://pointclouds.org/downloads/)
+* OpenCV >= 4.1
+  * [Documentation](https://opencv.org/)
 
 #### Currently used (2025 version):
 * MacOS: Sequoia 15.5
