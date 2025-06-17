@@ -1,5 +1,7 @@
 # Camera-based 2D Feature Tracking
-*Building Towards Collision Detection*
+*Building Collision Detection Systems (Part 1)*
+
+See Part 2: [3D Object Tracking](https://github.com/moorissa/3D-object-tracking)
 
 ## 1. Overview
 The main objective of this project is to develop a complete collision detection system. This project builds the core feature tracking capabilities we'll need for collision detection. We'll explore different detector/descriptor combinations to find the optimal performance balance.
